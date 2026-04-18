@@ -16,8 +16,8 @@ table_env.get_config().get_configuration().set_string("execution.checkpointing.i
 table_env.execute_sql("""
     CREATE TABLE kafka_logs (
             `symbol` STRING,
-            `open_time` STRING,
-            `close_time` STRING,
+            `open_time` BIGINT,
+            `close_time` BIGINT,
             `open` DOUBLE,
             `high` DOUBLE,
             `low` DOUBLE,
@@ -46,15 +46,15 @@ conf.set_string("fs.gs.auth.service.account.json.keyfile", KEY_FILE)
 table_env.execute_sql(f"""
     CREATE TABLE gcs_sink (
         `symbol` STRING,
-        `open_time` STRING,
-        `close_time` STRING,
+        `open_time` TIMESTAMP_LTZ(3),
+        `close_time` TIMESTAMP_LTZ(3),
         `open` DOUBLE,
         `high` DOUBLE,
         `low` DOUBLE,
         `close` DOUBLE,
         `volume` DOUBLE,
         `trades` INT,
-        `ingested_at` STRING,
+        `ingested_at` TIMESTAMP_LTZ(3),
         `proc_time` TIMESTAMP_LTZ(3),
         `proc_time2` AS PROCTIME(),
         `folder_ts` STRING
@@ -74,14 +74,15 @@ table_env.execute_sql(f"""
 table_env.execute_sql(f"""
     INSERT INTO gcs_sink
     SELECT `symbol`, 
-        `open_time`, 
-        `close_time`, 
-        `open`, `high`, 
+        TO_TIMESTAMP_LTZ(`open_time`, 3) as `open_time`, 
+        TO_TIMESTAMP_LTZ(`close_time`, 3) as `close_time`, 
+        `open`, 
+        `high`, 
         `low`, 
         `close`, 
         `volume`, 
         `trades`, 
-        `ingested_at`,
+        TO_TIMESTAMP_LTZ(REPLACE(SUBSTR(ingested_at, 1, 19), 'T', ' ')) as `ingested_at`,
         `proc_time`, 
         DATE_FORMAT(
             FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(CAST(proc_time AS STRING)) / {PARTITION_INTERVAL}) * {PARTITION_INTERVAL}), 

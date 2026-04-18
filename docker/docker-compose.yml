@@ -47,11 +47,11 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         jobmanager.memory.process.size: 1600m
-      - GOOGLE_APPLICATION_CREDENTIALS=/keys/sa_terraform_key.json # change file name if needed
-      - GOOGLE_PROJECT_ID=de-zoomcamp2026-final # change project id
-      - GCS_BUCKET=gs://crypto-data-full  # change bucket name if needed
-      - PARTITION_INTERVAL=120 #this is partitioning in GCS in seconds.
-      - CHECKPOINT_INTERVAL=60 # checkpoint interval in seconds
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID}
+      - GCS_BUCKET=${GCS_BUCKET}
+      - PARTITION_INTERVAL=${PARTITION_INTERVAL} #this is partitioning in GCS in seconds.
+      - CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL} # checkpoint interval in seconds
 
   taskmanager:
     image: pyflink-processor
@@ -73,11 +73,11 @@ services:
         taskmanager.memory.process.size: 1728m
         taskmanager.numberOfTaskSlots: 15
         parallelism.default: 3
-      - GOOGLE_APPLICATION_CREDENTIALS=/keys/sa_terraform_key.json # change file name if needed
-      - GOOGLE_PROJECT_ID=de-zoomcamp2026-final # change project id
-      - GCS_BUCKET=gs://crypto-data-full  # change bucket name if needed
-      - PARTITION_INTERVAL=120 # this is partitioning in GCS in seconds.
-      - CHECKPOINT_INTERVAL=60 # checkpoint interval in seconds
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID}
+      - GCS_BUCKET=${GCS_BUCKET}
+      - PARTITION_INTERVAL=${PARTITION_INTERVAL} # this is partitioning in GCS in seconds.
+      - CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL} # checkpoint interval in seconds
 
   kestra_postgres:
     image: postgres:18
@@ -94,7 +94,7 @@ services:
       retries: 10
 
   kestra:
-    image: kestra/kestra:v1.1
+    image: kestra/kestra:v1.2
     pull_policy: always
     user: "root"
     command: server standalone
@@ -102,9 +102,13 @@ services:
       - kestra_data:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
+      - ../keys:/keys:ro
     environment:
-      SECRET_GOOGLE_CREDS: ${GOOGLE_CREDS}
-
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+      ENV_GCS_BUCKET: ${GCS_BUCKET}
+      ENV_GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
+      ENV_GOOGLE_LOCATION: ${GOOGLE_LOCATION}
+      ENV_BQ_DATASET: crypto_raw
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:
@@ -113,12 +117,16 @@ services:
             username: kestra
             password: kestra
         kestra:
+          variables:
+            env-vars-prefix: "ENV_"
           server:
             basicAuth:
               username: "admin@admin.com"
               password: Qwerty123!
           repository:
             type: postgres
+            defaults:
+              enabled: false
           storage:
             type: local
             local:

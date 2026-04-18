@@ -1,0 +1,57 @@
+id: gcs_to_bigquery_trigger
+namespace: company.data_engineering
+
+variables:
+  bq_table: "{{ envs.google_project_id }}.{{ envs.bq_dataset }}.data1"
+
+tasks:
+  - id: log_everything
+    type: io.kestra.plugin.core.log.Log
+    message: "{{ trigger.blobs | json }}"
+
+  - id: load_to_bq_dirs
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ trigger.blobs }}"
+    tasks:
+      - id: set_gs_path
+        type: io.kestra.plugin.core.debug.Return
+        format: "{% set p = taskrun.value | jq('.name') | first %}{{ envs.gcs_bucket }}/{{ p | slice(0, p | length - 8) ~ '*' }}"
+      - id: log1
+        type: io.kestra.plugin.core.log.Log
+        message: "Loading {{ outputs.set_gs_path[taskrun.value].value }}"
+      - id: load_to_bq
+        type: io.kestra.plugin.gcp.bigquery.LoadFromGcs
+        from:
+          - "{{ outputs.set_gs_path[taskrun.value].value }}"
+        destinationTable: "{{render(vars.bq_table)}}"
+        format: PARQUET
+        writeDisposition: WRITE_APPEND
+        schema:
+          fields:
+            - {name: symbol, type: STRING}
+            - {name: open_time, type: TIMESTAMP}
+            - {name: close_time, type: TIMESTAMP}
+            - {name: open, type: FLOAT64}
+            - {name: high, type: FLOAT64}
+            - {name: low, type: FLOAT64}
+            - {name: close, type: FLOAT64}
+            - {name: volume, type: FLOAT64}
+            - {name: trades, type: INT64}
+            - {name: ingested_at, type: TIMESTAMP}
+            - {name: proc_time, type: TIMESTAMP}
+
+triggers:
+  - id: watch_for_success33
+    type: io.kestra.plugin.gcp.gcs.Trigger
+    interval: PT10S
+    from: "{{ envs.gcs_bucket }}"
+    regExp: ".*folder_ts=.*_SUCCESS"
+    listingType: RECURSIVE
+    action: NONE
+
+pluginDefaults:
+  - type: io.kestra.plugin.gcp
+    values:
+      projectId: "{{ envs.google_project_id }}"
+      location: "{{ envs.google_location }}"
+      bucket: "{{ envs.gcs_bucket }}"

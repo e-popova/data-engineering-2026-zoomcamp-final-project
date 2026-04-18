@@ -50,7 +50,7 @@ def make_producer() -> KafkaProducer:
 
 def build_ws_url(symbols: list[str]) -> str:
     """Binance combined stream URL для нескольких символов"""
-    streams = "/".join(f"{s}@kline_1m" for s in symbols)
+    streams = "/".join(f"{s}@kline_1s" for s in symbols)
     return f"wss://stream.binance.com:9443/stream?streams={streams}"
 
 

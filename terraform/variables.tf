@@ -23,14 +23,20 @@ variable "location" {
   default     = "EU"
 }
 
+variable "bq_dataset_raw_name" {
+  description = "Raw data"
+  #Update the below to your desired dataset name
+  default     = "crypto_raw"
+}
+
 variable "bq_dataset_staging_name" {
-  description = "My BigQuery Dataset Name"
+  description = "Staging data"
   #Update the below to your desired dataset name
   default     = "crypto_staging"
 }
 
 variable "bq_dataset_marts_name" {
-  description = "My BigQuery Dataset Name"
+  description = "Marts"
   #Update the below to your desired dataset name
   default     = "crypto_marts"
 }

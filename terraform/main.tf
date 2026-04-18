@@ -39,6 +39,13 @@ resource "google_storage_bucket" "data_lake" {
   }
 }
 
+resource "google_bigquery_dataset" "raw" {
+  dataset_id = var.bq_dataset_raw_name
+  description   = "Raw data"
+  location   = var.location
+  delete_contents_on_destroy = false
+}
+
 resource "google_bigquery_dataset" "staging" {
   dataset_id = var.bq_dataset_staging_name
   description   = "Raw and lightly cleaned data"
