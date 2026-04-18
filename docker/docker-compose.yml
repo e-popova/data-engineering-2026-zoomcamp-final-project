@@ -1,0 +1,137 @@
+volumes:
+  kestra_postgres_data:
+    driver: local
+  kestra_data:
+    driver: local
+
+services:
+  redpanda:
+    image: redpandadata/redpanda:latest
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 512M
+      - --overprovisioned
+      - --kafka-addr PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092
+      - --advertise-kafka-addr PLAINTEXT://localhost:9092,INTERNAL://redpanda:29092
+    ports:
+      - "9092:9092"
+      - "9644:9644"   # Admin API
+
+  redpanda-console: # For debug purpose see localhost:8080
+    image: redpandadata/console:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_BROKERS=redpanda:29092
+    depends_on:
+      - redpanda
+
+  jobmanager:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.flink
+    image: pyflink-processor
+    pull_policy: never
+    expose:
+      - "6123"
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./:/opt/flink/usrlib
+      - ../streaming-consumer/:/opt/src
+      - ../keys:/keys:ro
+    command: jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        jobmanager.memory.process.size: 1600m
+      - GOOGLE_APPLICATION_CREDENTIALS=/keys/sa_terraform_key.json # change file name if needed
+      - GOOGLE_PROJECT_ID=de-zoomcamp2026-final # change project id
+      - GCS_BUCKET=gs://crypto-data-full  # change bucket name if needed
+      - PARTITION_INTERVAL=120 #this is partitioning in GCS in seconds.
+      - CHECKPOINT_INTERVAL=60 # checkpoint interval in seconds
+
+  taskmanager:
+    image: pyflink-processor
+    pull_policy: never
+    expose:
+      - "6121"
+      - "6122"
+    volumes:
+      - ./:/opt/flink/usrlib
+      - ../streaming-consumer/:/opt/src
+      - ../keys:/keys:ro
+    depends_on:
+      - jobmanager
+    command: taskmanager --taskmanager.registration.timeout 5 min
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.memory.process.size: 1728m
+        taskmanager.numberOfTaskSlots: 15
+        parallelism.default: 3
+      - GOOGLE_APPLICATION_CREDENTIALS=/keys/sa_terraform_key.json # change file name if needed
+      - GOOGLE_PROJECT_ID=de-zoomcamp2026-final # change project id
+      - GCS_BUCKET=gs://crypto-data-full  # change bucket name if needed
+      - PARTITION_INTERVAL=120 # this is partitioning in GCS in seconds.
+      - CHECKPOINT_INTERVAL=60 # checkpoint interval in seconds
+
+  kestra_postgres:
+    image: postgres:18
+    volumes:
+      - kestra_postgres_data:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: kestra
+      POSTGRES_USER: kestra
+      POSTGRES_PASSWORD: kestra
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  kestra:
+    image: kestra/kestra:v1.1
+    pull_policy: always
+    user: "root"
+    command: server standalone
+    volumes:
+      - kestra_data:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
+    environment:
+      SECRET_GOOGLE_CREDS: ${GOOGLE_CREDS}
+
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://kestra_postgres:5432/kestra
+            driverClassName: org.postgresql.Driver
+            username: kestra
+            password: kestra
+        kestra:
+          server:
+            basicAuth:
+              username: "admin@admin.com"
+              password: Qwerty123!
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              basePath: "/app/storage"
+          queue:
+            type: postgres
+          tasks:
+            tmpDir:
+              path: /tmp/kestra-wd/tmp
+          url: http://localhost:8080/
+    ports:
+      - "8082:8080"
+      - "8083:8081"
+    depends_on:
+      kestra_postgres:
+        condition: service_started

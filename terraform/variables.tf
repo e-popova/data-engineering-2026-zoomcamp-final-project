@@ -1,7 +1,7 @@
 variable "credentials" {
   description = "My Credentials"
   #Update the below to your path to service account API key
-  default     = "keys/sa_terraform_key.json"
+  default     = "../keys/sa_terraform_key.json"
 }
 
 

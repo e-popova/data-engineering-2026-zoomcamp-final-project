@@ -11,9 +11,9 @@ One time installation:
 4. Enable these APIs for your project:
 https://console.cloud.google.com/apis/library/iam.googleapis.com
 https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
-5. Create json key for a service account in GCP and put it under terraform/keys directory
+5. Create json key for a service account in GCP and put it under keys directory. For convenience I use one service accounts for all purposes, but with understanding that it should be different in production
 6. Set enviromental variable: 
-   - export GOOGLE_APPLICATION_CREDENTIALS="terraform/keys/your_key.json"
+   - export GOOGLE_APPLICATION_CREDENTIALS="terraform/keys/your_key.json" (возможно тут изменения после переноса ключей, надо перепроверить)
 7. Install SDK and initialize gcloud CLI: https://docs.cloud.google.com/sdk/docs/install-sdk (возможно нужно написать подробнее)
 8. run 'gcloud auth application-default login'
 9. update variables.tf if needed
@@ -26,4 +26,16 @@ Later:
 - terraform destroy! when you don't need it anymore
 
 
-Streaming
+Streaming Data
+- for producer:
+  - cd streaming-producer
+  - uv sync 
+  - uv run python producer.py 
+
+All other:
+- cd docker
+- docker compose up --build -d (probably won't work somwehre since I have Apple M4. Need to be tested on another OC)
+- docker compose exec jobmanager ./bin/flink run \
+    -py /opt/src/consumer.py \
+    --pyFiles /opt/src -d
+

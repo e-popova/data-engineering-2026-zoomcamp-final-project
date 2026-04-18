@@ -1,0 +1,41 @@
+FROM flink:2.2.0-scala_2.12-java17
+
+USER root
+
+# Install JDK and build-essential to have 'include' folder and compiler for pemja build
+RUN apt-get update && apt-get install -y openjdk-17-jdk-headless build-essential && rm -rf /var/lib/apt/lists/*
+
+# Fix for pemja build: it expects JDK include folder at /opt/java/openjdk/include
+RUN ln -s /usr/lib/jvm/java-17-openjdk-$(dpkg --print-architecture)/include /opt/java/openjdk/include
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
+
+# ref: https://nightlies.apache.org/flink/flink-docs-release-2.2/docs/deployment/resource-providers/standalone/docker/#using-flink-python-on-docker
+
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+WORKDIR /opt/pyflink
+COPY pyproject.flink.toml pyproject.toml
+RUN uv python install 3.12 && uv sync && chown -R flink:flink /opt/pyflink /opt/python
+ENV PATH="/opt/pyflink/.venv/bin:$PATH"
+
+# Download connector libraries
+
+WORKDIR /opt/flink/lib
+RUN wget https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar; \
+    wget https://repo.maven.apache.org/maven2/org/apache/flink/flink-json/2.2.0/flink-json-2.2.0.jar; \
+    wget https://repo.maven.apache.org/maven2/org/apache/flink/flink-parquet/2.2.0/flink-parquet-2.2.0.jar; \
+    wget https://repo.maven.apache.org/maven2/org/apache/flink/flink-avro/2.2.0/flink-avro-2.2.0.jar; \
+    wget https://repo1.maven.org/maven2/org/apache/parquet/parquet-hadoop-bundle/1.12.3/parquet-hadoop-bundle-1.12.3.jar \
+    wget https://repo.maven.apache.org/maven2/org/apache/flink/flink-shaded-hadoop-2-uber/2.8.3-10.0/flink-shaded-hadoop-2-uber-2.8.3-10.0.jar; \
+    wget https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/4.0.1-2.0/flink-sql-connector-kafka-4.0.1-2.0.jar;
+
+RUN mkdir -p /opt/flink/plugins/gs-fs-hadoop
+RUN wget https://repo.maven.apache.org/maven2/org/apache/flink/flink-gs-fs-hadoop/2.2.0/flink-gs-fs-hadoop-2.2.0.jar \
+    -P /opt/flink/plugins/gs-fs-hadoop/
+
+COPY flink-config.yaml /opt/flink/conf/config.yaml
+
+USER flink
+WORKDIR /opt/flink
+
+ENV GOOGLE_APPLICATION_CREDENTIALS=/keys/sa_terraform_key.json
