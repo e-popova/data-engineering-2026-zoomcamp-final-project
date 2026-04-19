@@ -28,7 +28,10 @@ with raw_data as (
 
     {% if is_incremental() %}
     -- Берем данные только за последние 3 дня, чтобы не сканировать всю историю
-    where ingested_at > (select max(ingested_at) from {{ this }})
+    where ingested_at >= (
+        select timestamp_sub(max(ingested_at), interval 5 minute)
+        from {{ this }}
+    )
     {% endif %}
 ),
 
