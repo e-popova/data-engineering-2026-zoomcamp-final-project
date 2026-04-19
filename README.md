@@ -36,6 +36,10 @@ All other:
 - cd docker
 - docker compose up --build -d (probably won't work somwehre since I have Apple M4. Need to be tested on another OC)
 - docker compose exec jobmanager ./bin/flink run \
-    -py /opt/src/consumer.py \
+    -py /opt/src/consumer2.py \
     --pyFiles /opt/src -d
 
+
+
+TODO:
+- describe that sometimes trigger_name in workflow should be changed
