@@ -43,3 +43,9 @@ All other:
 
 TODO:
 - describe that sometimes trigger_name in workflow should be changed
+- workflow to create raw table
+
+
+
+kafka-python
+websockets
