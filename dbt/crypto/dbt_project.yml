@@ -31,3 +31,13 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   crypto:
+
+seeds:
+  crypto:
+    dim_symbols:
+      config:
+        column_types:
+          symbol: string
+          full_name: string
+          category: string
+          launch_year: integer
