@@ -38,10 +38,7 @@ One of the key analytical outputs of this project is the **Market Dominance** re
 ### Analytical Insights
 The project transforms raw trading data into meaningful business metrics:
 
-- **24-Hour Volume Share (by Symbol):** Identifies which specific assets are currently driving market activity.
-- **24-Hour Volume Share (by Category):** Uses a dbt **seed** (`dim_symbols`) to group assets into categories (e.g., Layer 1, Layer 2, Meme, Payment). This reveals broader market trends and sector dominance.
-
-A high percentage for a specific symbol or category indicates high volatility or strong investor interest, while a balanced distribution suggests a more stable or diversified market state.
+- **24-Hour Volume Share (by Symbol):** / **24-Hour Volume Share (by Category):** A high percentage for a specific symbol or category indicates high volatility or strong investor interest, while a balanced distribution suggests a more stable or diversified market state.
 
 
 
