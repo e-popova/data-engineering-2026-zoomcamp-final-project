@@ -40,7 +40,7 @@ tasks:
             - {name: ingested_at, type: TIMESTAMP}
 
 triggers:
-  - id: watch_for_success34
+  - id: watch_for_success
     type: io.kestra.plugin.gcp.gcs.Trigger
     interval: PT10S
     from: "{{ envs.gcs_bucket }}"

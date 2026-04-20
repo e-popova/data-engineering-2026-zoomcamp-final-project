@@ -37,5 +37,3 @@ COPY flink-config.yaml /opt/flink/conf/config.yaml
 
 USER flink
 WORKDIR /opt/flink
-
-ENV GOOGLE_APPLICATION_CREDENTIALS=/keys/sa_terraform_key.json

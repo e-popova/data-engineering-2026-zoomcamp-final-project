@@ -10,11 +10,9 @@ tasks:
         taskRunner:
           type: io.kestra.plugin.core.runner.Process
         commands:
-          - echo "Я сейчас в $(pwd)"
           - ls -la /app/dbt-project/
           - cp -R /app/dbt-project/* .
           - cp -R /keys/* .
-          - echo "А сейчас я в $(pwd)"
           - ls
       - id: dbt_build
         type: io.kestra.plugin.dbt.cli.DbtCLI
@@ -25,3 +23,8 @@ tasks:
         commands:
           - dbt deps
           - dbt build
+
+triggers:
+  - id: once_per_hour
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 * * * *"

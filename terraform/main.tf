@@ -45,17 +45,3 @@ resource "google_bigquery_dataset" "raw" {
   location   = var.location
   delete_contents_on_destroy = false
 }
-
-resource "google_bigquery_dataset" "staging" {
-  dataset_id = var.bq_dataset_staging_name
-  description   = "Raw and lightly cleaned data"
-  location   = var.location
-  delete_contents_on_destroy = false
-}
-
-resource "google_bigquery_dataset" "marts" {
-  dataset_id = var.bq_dataset_marts_name
-  description   = "BI-ready marts"
-  location   = var.location
-  delete_contents_on_destroy = false
-}

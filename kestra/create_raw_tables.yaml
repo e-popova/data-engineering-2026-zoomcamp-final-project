@@ -1,0 +1,31 @@
+id: create_raw_tables
+namespace: company.data_engineering
+
+variables:
+  bq_table: "{{ envs.google_project_id }}.{{ envs.bq_dataset }}.klines"
+
+tasks:
+  - id: create_klines_table
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      CREATE TABLE IF NOT EXISTS `{{render(vars.bq_table)}}` (
+        symbol STRING,
+        open_time TIMESTAMP,
+        close_time TIMESTAMP,
+        open FLOAT64,
+        high FLOAT64,
+        low FLOAT64,
+        close FLOAT64,
+        volume FLOAT64,
+        trades INT64,
+        ingested_at TIMESTAMP
+      )
+      PARTITION BY DATE(close_time)
+      CLUSTER BY symbol
+
+pluginDefaults:
+  - type: io.kestra.plugin.gcp
+    values:
+      projectId: "{{ envs.google_project_id }}"
+      location: "{{ envs.google_location }}"
+      bucket: "{{ envs.gcs_bucket }}"

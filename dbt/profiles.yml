@@ -1,0 +1,14 @@
+crypto:
+  outputs:
+    dev:
+      dataset: crypto_dbt #change to your dataset name
+      job_execution_timeout_seconds: 300
+      job_retries: 1
+      keyfile: sa_key.json #change to your file name (do not include here keys/ directory)
+      location: EU
+      method: service-account
+      priority: interactive
+      project: de-zoomcamp2026-final #change to your GOOGLE PROJECT ID
+      threads: 4
+      type: bigquery
+  target: dev

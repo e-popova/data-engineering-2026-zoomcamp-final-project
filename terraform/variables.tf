@@ -1,7 +1,7 @@
 variable "credentials" {
   description = "My Credentials"
-  #Update the below to your path to service account API key
-  default     = "../keys/sa_terraform_key.json"
+  #Update the path to service account API key json
+  default     = "../keys/sa_key.json"
 }
 
 
@@ -25,26 +25,14 @@ variable "location" {
 
 variable "bq_dataset_raw_name" {
   description = "Raw data"
-  #Update the below to your desired dataset name
-  default     = "crypto_raw"
-}
-
-variable "bq_dataset_staging_name" {
-  description = "Staging data"
-  #Update the below to your desired dataset name
-  default     = "crypto_staging"
-}
-
-variable "bq_dataset_marts_name" {
-  description = "Marts"
-  #Update the below to your desired dataset name
-  default     = "crypto_marts"
+  #Update the below to your desired dataset name for raw data
+  default     = "crypto_raw_test"
 }
 
 variable "gcs_bucket_name" {
   description = "GC Storage Bucket Name"
   #Update the below to a unique bucket name
-  default     = "crypto-data-full"
+  default     = "crypto-data-full-test"
 }
 
 variable "gcs_storage_class" {

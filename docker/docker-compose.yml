@@ -50,8 +50,8 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID}
       - GCS_BUCKET=${GCS_BUCKET}
-      - PARTITION_INTERVAL=${PARTITION_INTERVAL} #this is partitioning in GCS in seconds.
-      - CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL} # checkpoint interval in seconds
+      - PARTITION_INTERVAL=${PARTITION_INTERVAL}
+      - CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL}
 
   taskmanager:
     image: pyflink-processor
@@ -76,8 +76,8 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID}
       - GCS_BUCKET=${GCS_BUCKET}
-      - PARTITION_INTERVAL=${PARTITION_INTERVAL} # this is partitioning in GCS in seconds.
-      - CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL} # checkpoint interval in seconds
+      - PARTITION_INTERVAL=${PARTITION_INTERVAL}
+      - CHECKPOINT_INTERVAL=${CHECKPOINT_INTERVAL}
 
   kestra_postgres:
     image: postgres:18
@@ -110,6 +110,7 @@ services:
       ENV_GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
       ENV_GOOGLE_LOCATION: ${GOOGLE_LOCATION}
       ENV_BQ_DATASET: crypto_raw
+      KESTRA_TUTORIALS_ENABLED: false
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:
