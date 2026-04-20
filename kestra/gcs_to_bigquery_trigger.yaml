@@ -47,6 +47,7 @@ triggers:
     regExp: ".*folder_ts=.*_SUCCESS"
     listingType: RECURSIVE
     action: NONE
+    maxFiles: 1000
 
 pluginDefaults:
   - type: io.kestra.plugin.gcp

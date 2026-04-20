@@ -1,6 +1,6 @@
-with hourly_volume as (
+with five_min_volume as (
     select
-        timestamp_trunc(open_time, hour) as kline_hour,
+        TIMESTAMP_SECONDS(DIV(UNIX_SECONDS(close_time), 300) * 300) AS kline_5min,
         symbol,
         sum(volume) as total_volume
     from {{ ref('fct_klines') }}
@@ -9,8 +9,8 @@ with hourly_volume as (
 )
 
 select
-    kline_hour,
+    kline_5min,
     symbol,
     total_volume
-from hourly_volume
-order by kline_hour asc, total_volume desc
+from five_min_volume
+order by kline_5min asc, total_volume desc
