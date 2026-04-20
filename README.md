@@ -39,6 +39,7 @@ One of the key analytical outputs of this project is the **Market Dominance** re
 The project transforms raw trading data into meaningful business metrics:
 
 - **24-Hour Volume Share (by Symbol):** / **24-Hour Volume Share (by Category):** A high percentage for a specific symbol or category indicates high volatility or strong investor interest, while a balanced distribution suggests a more stable or diversified market state.
+- **Trading Volume Over Time (Hourly):** A stacked bar chart that shows the total volume across all symbols on an hourly basis. Each bar is divided by symbol, providing a visual representation of how market activity fluctuates throughout the day and which coins contribute most to those peaks.
 
 
 
